@@ -2029,24 +2029,12 @@
         </repository>
       </repositories>
     </profile>
-    <profile>
-      <id>build-contrib</id>
-      <activation>
-        <property>
-          <name>!skipContrib</name>
-        </property>
-      </activation>
-      <modules>
-        <module>contrib</module>
-      </modules>
-    </profile>
   </profiles>
   <modules>
-    <module>tools</module>
+  <!-- <module>tools</module> -->
     <module>protocol</module>
     <module>common</module>
     <module>logical</module>
     <module>exec</module>
-    <module>distribution</module>
   </modules>
 </project>
