@@ -307,6 +307,12 @@ public class TestExampleQueries extends BaseTestQuery {
   }
 
   @Test
+  public void testCsv() throws Exception {
+    test("SELECT columns[1] FROM dfs.`/Library/WebServer/Documents/numbers-1.csv` WHERE columns[1]>1.0;");
+  }
+
+
+  @Test
   public void testGroupBy() throws Exception {
     test("select marital_status, COUNT(1) as cnt from cp.`employee.json` group by marital_status");
   }

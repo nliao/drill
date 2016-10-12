@@ -84,7 +84,7 @@ public class UserClient extends BasicClientWithConnection<RpcType, UserToBitHand
         .setRpcVersion(UserRpcConfig.RPC_VERSION)
         .setSupportListening(true)
         .setSupportComplexTypes(supportComplexTypes)
-        .setSupportTimeout(true)
+        .setSupportTimeout(false)
         .setCredentials(credentials);
 
     if (props != null) {
