@@ -59,7 +59,7 @@ public class UserWorker{
    * Helper method to generate QueryId
    * @return generated QueryId
    */
-  private static QueryId queryIdGenerator() {
+   public static QueryId queryIdGenerator() {
     ThreadLocalRandom r = ThreadLocalRandom.current();
 
     // create a new queryid where the first four bytes are a growing time (each new value comes earlier in sequence).  Last 12 bytes are random.

@@ -17,9 +17,8 @@
  */
 package org.apache.drill.exec.server;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import org.apache.drill.common.AutoCloseables;
 import org.apache.drill.common.StackTrace;
 import org.apache.drill.common.config.DrillConfig;
@@ -31,22 +30,27 @@ import org.apache.drill.exec.coord.ClusterCoordinator.RegistrationHandle;
 import org.apache.drill.exec.coord.zk.ZKClusterCoordinator;
 import org.apache.drill.exec.exception.DrillbitStartupException;
 import org.apache.drill.exec.proto.CoordinationProtos.DrillbitEndpoint;
+import org.apache.drill.exec.proto.UserBitShared;
+import org.apache.drill.exec.proto.UserProtos;
+import org.apache.drill.exec.rpc.user.UserServer;
 import org.apache.drill.exec.server.options.OptionManager;
 import org.apache.drill.exec.server.options.OptionValue;
 import org.apache.drill.exec.server.options.OptionValue.OptionType;
-import org.apache.drill.exec.server.rest.WebServer;
 import org.apache.drill.exec.service.ServiceEngine;
 import org.apache.drill.exec.store.StoragePluginRegistry;
-import org.apache.drill.exec.store.sys.store.provider.CachingPersistentStoreProvider;
 import org.apache.drill.exec.store.sys.PersistentStoreProvider;
 import org.apache.drill.exec.store.sys.PersistentStoreRegistry;
+import org.apache.drill.exec.store.sys.store.provider.CachingPersistentStoreProvider;
 import org.apache.drill.exec.store.sys.store.provider.LocalPersistentStoreProvider;
 import org.apache.drill.exec.util.GuavaPatcher;
 import org.apache.drill.exec.work.WorkManager;
+import org.apache.drill.exec.work.foreman.Foreman;
+import org.apache.drill.exec.work.user.UserWorker;
 import org.apache.zookeeper.Environment;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Starts, tracks and stops all the required services for a Drillbit daemon to work.
@@ -73,9 +77,16 @@ public class Drillbit implements AutoCloseable {
   private final PersistentStoreProvider storeProvider;
   private final WorkManager manager;
   private final BootStrapContext context;
-  private final WebServer webServer;
+//  private final WebServer webServer;
   private RegistrationHandle registrationHandle;
   private volatile StoragePluginRegistry storageRegistry;
+
+  private static final Properties TEST_CONFIGURATIONS = new Properties() {
+    {
+      put(ExecConstants.SYS_STORE_PROVIDER_LOCAL_ENABLE_WRITE, "false");
+      put(ExecConstants.HTTP_ENABLE, "false");
+    }
+  };
 
   @VisibleForTesting
   public Drillbit(
@@ -94,7 +105,8 @@ public class Drillbit implements AutoCloseable {
     context = new BootStrapContext(config, classpathScan);
     manager = new WorkManager(context);
 
-    webServer = new WebServer(config, context.getMetrics(), manager);
+//    webServer = new WebServer(config, context.getMetrics(), manager);
+
     boolean isDistributedMode = false;
     if (serviceSet != null) {
       coord = serviceSet.getCoordinator();
@@ -105,7 +117,7 @@ public class Drillbit implements AutoCloseable {
       isDistributedMode = true;
     }
 
-    engine = new ServiceEngine(manager.getControlMessageHandler(), manager.getUserWorker(), context,
+   engine = new ServiceEngine(manager.getControlMessageHandler(), manager.getUserWorker(), context,
         manager.getWorkBus(), manager.getBee(), allowPortHunting, isDistributedMode);
 
     logger.info("Construction completed ({} ms).", w.elapsed(TimeUnit.MILLISECONDS));
@@ -124,10 +136,18 @@ public class Drillbit implements AutoCloseable {
     drillbitContext.getOptionManager().init();
     javaPropertiesToSystemOptions();
     registrationHandle = coord.register(md);
-    webServer.start();
+//    webServer.start();
 
     Runtime.getRuntime().addShutdownHook(new ShutdownThread(this, new StackTrace()));
     logger.info("Startup completed ({} ms).", w.elapsed(TimeUnit.MILLISECONDS));
+  }
+
+  public UserBitShared.QueryId runQuery(UserServer.UserClientConnection connection, UserProtos.RunQuery query) {
+    final UserBitShared.QueryId id = UserWorker.queryIdGenerator();
+    WorkManager.WorkerBee bee = this.manager.getBee();
+    Foreman foreman = new Foreman(bee, bee.getContext(), connection, id, query);
+    bee.addNewForeman(foreman);
+    return id;
   }
 
   @Override
@@ -157,7 +177,7 @@ public class Drillbit implements AutoCloseable {
 
     try {
       AutoCloseables.close(
-          webServer,
+          //webServer,
           engine,
           storeProvider,
           coord,
@@ -262,13 +282,19 @@ public class Drillbit implements AutoCloseable {
     return manager.getContext();
   }
 
+  public ServiceEngine getServiceEngine() {
+    return  this.engine;
+  }
+
   public static void main(final String[] cli) throws DrillbitStartupException {
     final StartupOptions options = StartupOptions.parse(cli);
     start(options);
   }
 
   public static Drillbit start(final StartupOptions options) throws DrillbitStartupException {
-    return start(DrillConfig.create(options.getConfigLocation()), null);
+    //return start(DrillConfig.create(options.getConfigLocation()), null);
+    return start(DrillConfig.create(TEST_CONFIGURATIONS), RemoteServiceSet.getLocalServiceSet());
+    //return start(DrillConfig.create(options.getConfigLocation()), RemoteServiceSet.getLocalServiceSet());
   }
 
   public static Drillbit start(final DrillConfig config) throws DrillbitStartupException {

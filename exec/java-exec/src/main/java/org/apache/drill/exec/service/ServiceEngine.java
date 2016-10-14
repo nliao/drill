@@ -206,4 +206,8 @@ public class ServiceEngine implements AutoCloseable {
     AutoCloseables.close(userAllocator, controlAllocator, dataAllocator);
 
   }
+
+  public UserServer getUserServer() {
+      return this.userServer;
+  }
 }

@@ -300,7 +300,6 @@ public class TestExampleQueries extends BaseTestQuery {
         "  on nations.N_REGIONKEY = regions.R_REGIONKEY where 1 = 0");
   }
 
-
   @Test
   public void testWhere() throws Exception {
     test("select * from cp.`employee.json` ");
@@ -308,7 +307,7 @@ public class TestExampleQueries extends BaseTestQuery {
 
   @Test
   public void testCsv() throws Exception {
-    test("SELECT columns[1] FROM dfs.`/Library/WebServer/Documents/numbers-1.csv` WHERE columns[1]>1.0;");
+    test("SELECT columns[1] FROM dfs.`/Library/WebServer/Documents/numbers-1.csv`;");
   }
 
 
