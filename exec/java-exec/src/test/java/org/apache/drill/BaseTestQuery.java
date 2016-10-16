@@ -75,6 +75,8 @@ public class BaseTestQuery extends ExecTest {
   private static final String ENABLE_FULL_CACHE = "drill.exec.test.use-full-cache";
   private static final int MAX_WIDTH_PER_NODE = 2;
 
+  private static final String host = "localhost";
+
   @SuppressWarnings("serial")
   private static final Properties TEST_CONFIGURATIONS = new Properties() {
     {
@@ -194,7 +196,10 @@ public class BaseTestQuery extends ExecTest {
       TestUtilities.makeDfsTmpSchemaImmutable(pluginRegistry);
     }
 
-    client = QueryTestUtil.createClient(config,  serviceSet, MAX_WIDTH_PER_NODE, null);
+    Properties properties = new Properties();
+    properties.setProperty("drillbit", host);
+
+    client = QueryTestUtil.createClient(config,  serviceSet, MAX_WIDTH_PER_NODE, properties);
   }
 
   /**

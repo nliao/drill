@@ -18,8 +18,10 @@
 package org.apache.drill.exec.nested;
 
 import org.apache.drill.BaseTestQuery;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestFastComplexSchema extends BaseTestQuery {
 
   @Test

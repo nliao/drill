@@ -17,14 +17,9 @@
  */
 package org.apache.drill.exec.store.sys;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryNTimes;
 import org.apache.drill.common.config.DrillConfig;
-import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.TestWithZookeeper;
 import org.apache.drill.exec.store.sys.store.provider.LocalPersistentStoreProvider;
-import org.apache.drill.exec.store.sys.store.provider.ZookeeperPersistentStoreProvider;
 import org.junit.Test;
 
 public class TestPStoreProviders extends TestWithZookeeper {
@@ -34,24 +29,7 @@ public class TestPStoreProviders extends TestWithZookeeper {
 
   @Test
   public void verifyLocalStore() throws Exception {
-    try(LocalPersistentStoreProvider provider = new LocalPersistentStoreProvider(DrillConfig.create())){
-      PStoreTestUtil.test(provider);
-    }
-  }
-
-  @Test
-  public void verifyZkStore() throws Exception {
-    DrillConfig config = getConfig();
-    String connect = config.getString(ExecConstants.ZK_CONNECTION);
-    CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-    .namespace(config.getString(ExecConstants.ZK_ROOT))
-    .retryPolicy(new RetryNTimes(1, 100))
-    .connectionTimeoutMs(config.getInt(ExecConstants.ZK_TIMEOUT))
-    .connectString(connect);
-
-    try(CuratorFramework curator = builder.build()){
-      curator.start();
-      ZookeeperPersistentStoreProvider provider = new ZookeeperPersistentStoreProvider(config, curator);
+    try (LocalPersistentStoreProvider provider = new LocalPersistentStoreProvider(DrillConfig.create())) {
       PStoreTestUtil.test(provider);
     }
   }

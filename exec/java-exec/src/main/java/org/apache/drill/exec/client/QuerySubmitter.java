@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.drill.common.config.DrillConfig;
-import org.apache.drill.exec.coord.zk.ZKClusterCoordinator;
 import org.apache.drill.exec.proto.UserBitShared.QueryType;
 import org.apache.drill.exec.rpc.user.AwaitableUserResultsListener;
 import org.apache.drill.exec.server.Drillbit;
@@ -57,7 +56,7 @@ public class QuerySubmitter {
       System.exit(0);
     }
 
-    System.exit(submitter.submitQuery(o.location, o.queryString, o.planType, o.zk, o.local, o.bits, o.format, o.width));
+    System.exit(submitter.submitQuery(o.location, o.queryString, o.planType, o.zk, o.bits, o.format, o.width));
   }
 
   static class Options {
@@ -93,11 +92,8 @@ public class QuerySubmitter {
     TSV, CSV, TABLE
   }
 
-  public int submitQuery(String planLocation, String queryString, String type, String zkQuorum, boolean local, int bits, String format) throws Exception {
-      return submitQuery(planLocation, queryString, type, zkQuorum, local, bits, format, VectorUtil.DEFAULT_COLUMN_WIDTH);
-  }
-
-  public int submitQuery(String planLocation, String queryString, String type, String zkQuorum, boolean local, int bits, String format, int width) throws Exception {
+  public int submitQuery(String planLocation, String queryString, String type, String zkQuorum, int bits, String format,
+          int width) throws Exception {
     DrillConfig config = DrillConfig.create();
     DrillClient client = null;
 
@@ -108,19 +104,13 @@ public class QuerySubmitter {
     Drillbit[] drillbits = null;
 
     try {
-      if (local) {
-        serviceSet = RemoteServiceSet.getLocalServiceSet();
-        drillbits = new Drillbit[bits];
-        for (int i = 0; i < bits; i++) {
-          drillbits[i] = new Drillbit(config, serviceSet);
-          drillbits[i].run();
-        }
-        client = new DrillClient(config, serviceSet.getCoordinator());
-      } else {
-        ZKClusterCoordinator clusterCoordinator = new ZKClusterCoordinator(config, zkQuorum);
-        clusterCoordinator.start(10000);
-        client = new DrillClient(config, clusterCoordinator);
+      serviceSet = RemoteServiceSet.getLocalServiceSet();
+      drillbits = new Drillbit[bits];
+      for (int i = 0; i < bits; i++) {
+        drillbits[i] = new Drillbit(config, serviceSet);
+        drillbits[i].run();
       }
+      client = new DrillClient(config, serviceSet.getCoordinator());
       client.connect();
 
       String plan;
@@ -138,12 +128,10 @@ public class QuerySubmitter {
       if (client != null) {
         client.close();
       }
-      if (local) {
-        for (Drillbit b : drillbits) {
-          b.close();
-        }
-        serviceSet.close();
+      for (Drillbit b : drillbits) {
+        b.close();
       }
+      serviceSet.close();
     }
   }
 

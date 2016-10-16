@@ -27,11 +27,11 @@ import org.apache.drill.common.scanner.persistence.ScanResult;
 import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.coord.ClusterCoordinator;
 import org.apache.drill.exec.coord.ClusterCoordinator.RegistrationHandle;
-import org.apache.drill.exec.coord.zk.ZKClusterCoordinator;
 import org.apache.drill.exec.exception.DrillbitStartupException;
 import org.apache.drill.exec.proto.CoordinationProtos.DrillbitEndpoint;
 import org.apache.drill.exec.proto.UserBitShared;
 import org.apache.drill.exec.proto.UserProtos;
+import org.apache.drill.exec.rpc.RpcException;
 import org.apache.drill.exec.rpc.user.UserServer;
 import org.apache.drill.exec.server.options.OptionManager;
 import org.apache.drill.exec.server.options.OptionValue;
@@ -112,9 +112,7 @@ public class Drillbit implements AutoCloseable {
       coord = serviceSet.getCoordinator();
       storeProvider = new CachingPersistentStoreProvider(new LocalPersistentStoreProvider(config));
     } else {
-      coord = new ZKClusterCoordinator(config);
-      storeProvider = new PersistentStoreRegistry(this.coord, config).newPStoreProvider();
-      isDistributedMode = true;
+      throw new RpcException("zookeeper is not supported.");
     }
 
    engine = new ServiceEngine(manager.getControlMessageHandler(), manager.getUserWorker(), context,

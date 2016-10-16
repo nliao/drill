@@ -41,7 +41,6 @@ import org.apache.drill.common.config.DrillConfig;
 import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.coord.ClusterCoordinator;
-import org.apache.drill.exec.coord.zk.ZKClusterCoordinator;
 import org.apache.drill.exec.exception.OutOfMemoryException;
 import org.apache.drill.exec.memory.BufferAllocator;
 import org.apache.drill.exec.memory.RootAllocatorFactory;
@@ -138,7 +137,7 @@ public class DrillClient implements Closeable, ConnectionThrottle {
 
   public DrillClient(DrillConfig config, ClusterCoordinator coordinator)
     throws OutOfMemoryException {
-    this(config, coordinator, null, false);
+    this(config, coordinator, null, true);
   }
 
   public DrillClient(DrillConfig config, ClusterCoordinator coordinator, boolean isDirect)
@@ -148,7 +147,7 @@ public class DrillClient implements Closeable, ConnectionThrottle {
 
   public DrillClient(DrillConfig config, ClusterCoordinator coordinator, BufferAllocator allocator)
       throws OutOfMemoryException {
-    this(config, coordinator, allocator, false);
+    this(config, coordinator, allocator, true);
   }
 
   public DrillClient(DrillConfig config, ClusterCoordinator coordinator, BufferAllocator allocator, boolean isDirect) {
@@ -214,20 +213,7 @@ public class DrillClient implements Closeable, ConnectionThrottle {
               .setUserPort(Integer.parseInt(port))
               .build();
     } else {
-      if (ownsZkConnection) {
-        try {
-          this.clusterCoordinator = new ZKClusterCoordinator(this.config, connect);
-          this.clusterCoordinator.start(10000);
-        } catch (Exception e) {
-          throw new RpcException("Failure setting up ZK for client.", e);
-        }
-      }
-
-      final ArrayList<DrillbitEndpoint> endpoints = new ArrayList<>(clusterCoordinator.getAvailableEndpoints());
-      checkState(!endpoints.isEmpty(), "No DrillbitEndpoint can be found");
-      // shuffle the collection then get the first endpoint
-      Collections.shuffle(endpoints);
-      endpoint = endpoints.iterator().next();
+      throw new RpcException("ZooKeeper is not supported.");
     }
 
     if (props != null) {
