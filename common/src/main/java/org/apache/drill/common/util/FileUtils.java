@@ -33,6 +33,7 @@ public class FileUtils {
   public static final String separator = "" + separatorChar;
 
   public static File getResourceAsFile(String fileName) throws IOException {
+    System.out.println("NINGLIAO: user.dir=" + System.getProperty("user.dir"));
     URL u = FileUtils.class.getResource(fileName);
     if (u == null) {
       throw new FileNotFoundException(String.format("Unable to find file on path %s", fileName));

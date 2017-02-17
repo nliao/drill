@@ -82,6 +82,7 @@ public class BaseTestQuery extends ExecTest {
     {
       put(ExecConstants.SYS_STORE_PROVIDER_LOCAL_ENABLE_WRITE, "false");
       put(ExecConstants.HTTP_ENABLE, "false");
+      put(QueryTestUtil.TEST_QUERY_PRINTING_SILENT, "false");
     }
   };
 

@@ -27,6 +27,7 @@ import org.apache.drill.common.util.FileUtils;
 import org.apache.drill.common.util.TestTools;
 import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.compile.ClassTransformer;
+import org.apache.hadoop.fs.Path;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1198,6 +1199,12 @@ public class TestExampleQueries extends BaseTestQuery {
         .baselineValues("1930-01-08")
         .build()
         .run();
+  }
+
+  @Test
+  public void testBlidex() {
+    Path f = new Path("stumpy:/410000000013d18c210030874fdb");
+    System.out.println(f.toUri().getPath());
   }
 
 }

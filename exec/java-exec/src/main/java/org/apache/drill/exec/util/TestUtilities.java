@@ -26,6 +26,7 @@ import org.apache.drill.exec.store.dfs.FileSystemPlugin;
 import org.apache.drill.exec.store.dfs.WorkspaceConfig;
 
 import java.io.File;
+import java.util.Properties;
 
 /**
  * This class contains utility methods to speed up tests. Some of the production code currently calls this method
@@ -42,6 +43,8 @@ public class TestUtilities {
   // <DRILL_SRC_HOME>/exec/java-exec/src/test/resources/bootstrap-storage-plugins.json.
   private static final String dfsTestPluginName = "dfs_test";
   private static final String dfsTestTmpSchema = "tmp";
+
+  private static final String host = "localhost";
 
   /**
    * Create and removes a temporary folder
@@ -92,5 +95,11 @@ public class TestUtilities {
     dfsPluginConfig.workspaces.put(dfsTmpSchema, newTmpWSConfig);
 
     pluginRegistry.createOrUpdate(dfsPluginName, dfsPluginConfig, true);
+  }
+
+  public static Properties getProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("drillbit", host);
+    return properties;
   }
 }

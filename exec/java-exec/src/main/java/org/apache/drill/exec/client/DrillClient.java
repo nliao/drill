@@ -90,6 +90,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.AbstractCheckedFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import org.apache.drill.exec.util.TestUtilities;
 
 /**
  * Thin wrapper around a UserClient that handles connect/close and transforms
@@ -192,7 +193,7 @@ public class DrillClient implements Closeable, ConnectionThrottle {
    * @throws RpcException
    */
   public void connect() throws RpcException {
-    connect(null, null);
+    connect(null, TestUtilities.getProperties());
   }
 
   public void connect(Properties props) throws RpcException {
